@@ -94,5 +94,4 @@ def get_package_data_from_json(filename):
     except (ValueError, AttributeError):
         return None, None
 
-
     return name, data

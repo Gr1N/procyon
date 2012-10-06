@@ -92,6 +92,3 @@ def upgrade(packages=[]):
     """ Upgrade packages.
     """
     pass
-
-if __name__ == '__main__':
-    pass

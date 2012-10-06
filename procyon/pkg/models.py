@@ -35,6 +35,7 @@ __all__ = (
     'Package',
 )
 
+
 database = os.path.join(procyon_settings.PROCYON_PATH, procyon_settings.PACKAGES_DB_NAME)
 database = peewee.SqliteDatabase(database)
 database.connect()
