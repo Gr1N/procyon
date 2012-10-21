@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python -m unittest -v pkg
+python -m unittest discover

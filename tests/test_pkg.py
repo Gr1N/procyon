@@ -59,17 +59,17 @@ class LogicTests(unittest.TestCase):
     def test_installed_packages_keys(self):
         packages = get_installed_packages()
 
-        self.assertIn(FAKE_NAME1, packages)
-        self.assertIn(FAKE_NAME2, packages)
+        self.assertTrue(FAKE_NAME1 in packages)
+        self.assertTrue(FAKE_NAME2 in packages)
 
     @patch('procyon.pkg.logic.Package', new=FakePackage)
     def test_installed_packages_values(self):
         packages = get_installed_packages()
 
         package = packages.get(FAKE_NAME1)
-        self.assertIn('formula_name', package)
-        self.assertIn('version', package)
-        self.assertIn('updated_at', package)
+        self.assertTrue('formula_name' in package)
+        self.assertTrue('version' in package)
+        self.assertTrue('updated_at' in package)
 
     def create_temporary_file(self, file_content):
         tf = NamedTemporaryFile(delete=False)
@@ -107,9 +107,9 @@ class LogicTests(unittest.TestCase):
         name, data = package_data
         self.assertEqual(type(data), type({}))
         self.assertEqual(name, FAKE_NAME1)
-        self.assertIn('info', data)
-        self.assertIn('formula_name', data)
-        self.assertIn('version', data)
+        self.assertTrue('info' in data)
+        self.assertTrue('formula_name' in data)
+        self.assertTrue('version' in data)
         self.assertEqual(data.get('formula_name'), tf_name)
 
     @patch('procyon.pkg.logic.os.listdir', new=lambda ls: [])
@@ -133,8 +133,8 @@ class LogicTests(unittest.TestCase):
             packages = get_available_packages()
 
         self.assertEqual(len(packages), 2)
-        self.assertIn(FAKE_NAME1, packages)
-        self.assertIn(FAKE_NAME2, packages)
+        self.assertTrue(FAKE_NAME1 in packages)
+        self.assertTrue(FAKE_NAME2 in packages)
 
     def test_available_packages_invalid_files(self):
         tf_name = self.create_temporary_file('invalid_file')

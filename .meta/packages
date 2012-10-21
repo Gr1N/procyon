@@ -1,3 +1,7 @@
+# for package
 GitPython
 peewee
+
+# for testing
+discovery
 mock
