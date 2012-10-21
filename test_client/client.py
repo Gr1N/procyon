@@ -23,8 +23,18 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+import argparse
+
 from procyon import core
 
 
-if __name__ == '__main__':
-    print core.__all__
+parser = argparse.ArgumentParser(description='Choose command.')
+
+parser.add_argument('command')
+args = parser.parse_args()
+
+command = getattr(core, args.command, None)
+try:
+    print command()
+except TypeError:
+    parser.print_help()
