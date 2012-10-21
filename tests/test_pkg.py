@@ -42,6 +42,8 @@ FakePackage.create(name=FAKE_NAME2, formula_name=FAKE_NAME2, version='1')
 
 
 class LogicTests(unittest.TestCase):
+    # TODO: clone repo with formulas or create them
+    # NOTE: now for launch tests you should copy some formulas to users _procyon_ directory
     @patch('procyon.pkg.logic.Package', new=FakePackage)
     def test_installed_packages_type(self):
         packages = get_installed_packages()

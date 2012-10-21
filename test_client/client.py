@@ -23,41 +23,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import os
+from procyon import core
 
 
-__all__ = (
-    'settings',
-)
-
-
-default_settings = {
-    # global settings
-    'PROCYON_PATH': os.path.expanduser('~/.procyon'),
-
-    # repo settings
-    'REPO_NAME': 'procyon',
-    'REPO_PATH': None,
-    'REMOTE_REPO': 'git://github.com/Gr1N/procyon.git',
-    'FORMULAS_DIR_NAME': 'formulas',
-
-    # packaging settings
-    'PACKAGES_DB_NAME': 'packges.db',
-}
-
-
-class Settings:
-    def __init__(self):
-        for k, v in default_settings.items():
-            setattr(self, k, v)
-
-
-settings = Settings()
-
-
-if not os.path.exists(settings.PROCYON_PATH):
-    os.makedirs(settings.PROCYON_PATH)
-
-
-if not getattr(settings, 'REPO_PATH', None):
-    settings.REPO_PATH = os.path.join(settings.PROCYON_PATH, settings.REPO_NAME)
+if __name__ == '__main__':
+    print core.__all__
