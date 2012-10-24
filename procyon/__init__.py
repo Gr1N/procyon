@@ -24,6 +24,7 @@
 
 
 import os
+import sys
 
 
 __all__ = (
@@ -54,10 +55,11 @@ class Settings:
 
 settings = Settings()
 
-
 if not os.path.exists(settings.PROCYON_PATH):
     os.makedirs(settings.PROCYON_PATH)
 
-
 if not getattr(settings, 'REPO_PATH', None):
     settings.REPO_PATH = os.path.join(settings.PROCYON_PATH, settings.REPO_NAME)
+
+formulas_path = os.path.join(settings.REPO_PATH, settings.FORMULAS_DIR_NAME)
+sys.path.append(formulas_path)

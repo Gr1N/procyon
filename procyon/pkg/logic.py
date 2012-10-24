@@ -23,7 +23,6 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import json
 import os.path
 
 from procyon.pkg.models import Package
@@ -47,11 +46,12 @@ def get_available_packages():
     )
     packages = {}
 
-    for filename in os.listdir(formulas_dir):
-        package_name, package_data = get_package_data_from_json(filename)
+    for modulename in os.listdir(formulas_dir):
+        if modulename != '__init__.py' and not modulename.endswith('.pyc'):
+            package_name, package_data = get_package_data(modulename)
 
-        if package_name and package_data:
-            packages.setdefault(package_name, package_data)
+            if package_name and package_data:
+                packages.setdefault(package_name, package_data)
 
     return packages
 
@@ -72,26 +72,29 @@ def get_installed_packages():
     return packages
 
 
-def get_package_data_from_json(filename):
+def import_formula_module(modulename):
+    absolute_modulename = modulename.split('.')[0]
+    try:
+        formula = __import__(absolute_modulename).Formula
+        return formula if formula.check_items else None
+    except AttributeError:
+        return None
+
+
+def get_package_data(modulename):
     u"""Returns parsed information about package from *.json file with
     passed file name via arguments.
     """
-    formulas_dir = os.path.join(
-        procyon_settings.REPO_PATH, procyon_settings.FORMULAS_DIR_NAME
-    )
-    path_to_formula = os.path.join(formulas_dir, filename)
-    f = open(path_to_formula, 'r')
+    formula = import_formula_module(modulename)
 
-    try:
-        json_data = json.load(f)
-
-        name = json_data.get('name', None)
-        data = {
-            'info': json_data.get('info', None),
-            'formula_name': filename,
-            'version': json_data.get('version', None),
-        }
-    except (ValueError, AttributeError):
+    if not formula:
         return None, None
+
+    name = formula.name
+    data = {
+        'info': formula.info,
+        'formula_name': modulename,
+        'version': formula.version,
+    }
 
     return name, data

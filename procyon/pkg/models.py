@@ -53,3 +53,18 @@ class Package(peewee.Model):
 
 if not Package.table_exists():
     Package.create_table()
+
+
+class Formula(object):
+    name = None
+    info = None
+    version = None
+
+    def check_items(self):
+        if self.name and self.info and self.version:
+            return True
+
+        return False
+
+    def install(self):
+        raise NotImplementedError
