@@ -23,6 +23,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+from __future__ import unicode_literals
+
 from procyon.repo.models import Repo
 from procyon.pkg.logic import get_available_packages, get_installed_packages
 from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
@@ -42,54 +44,54 @@ __all__ = (
 
 
 def help():
-    """ Show available commands.
+    """Show available commands.
     """
     pass
 
 
 def freeze():
-    """ Output all currently installed packages (exact versions).
+    """Output all currently installed packages (exact versions).
     """
     return get_installed_packages()
 
 
 def cache():
-    """ Output all available to install packages.
+    """Output all available to install packages.
     """
     return get_available_packages()
 
 
 def outdated():
-    """ Output all outdated packages.
+    """Output all outdated packages.
     """
     return get_outdated_packages()
 
 
 def search(package):
-    """ Search packages.
+    """Search packages.
     """
     return get_available_packages_by_name(name=package)
 
 
 def update():
-    """ Update packages index.
+    """Update packages index.
     """
     Repo().update()
 
 
 def install(packages=[]):
-    """ Install packages.
+    """Install packages.
     """
     pass
 
 
 def uninstall(packages=[]):
-    """ Uninstall packages.
+    """Uninstall packages.
     """
     pass
 
 
 def upgrade(packages=[]):
-    """ Upgrade packages.
+    """Upgrade packages.
     """
     pass

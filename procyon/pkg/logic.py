@@ -23,6 +23,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+from __future__ import unicode_literals
+
 import os.path
 
 from procyon import settings as procyon_settings
@@ -37,7 +39,7 @@ __all__ = (
 
 
 def get_available_packages():
-    u"""Returns dictionary with available to install packages from repo.
+    """Returns dictionary with available to install packages from repo.
     """
     formulas_dir = os.path.join(
         procyon_settings.REPO_PATH, procyon_settings.FORMULAS_DIR_NAME
@@ -55,7 +57,7 @@ def get_available_packages():
 
 
 def get_available_packages_by_name(name):
-    u"""Returns dictionary with available to install packages from repo with
+    """Returns dictionary with available to install packages from repo with
     specified package name.
     """
     def prepare_name(name):
@@ -79,7 +81,7 @@ def get_available_packages_by_name(name):
 
 
 def get_installed_packages():
-    u"""Returns dictionary with all installed packages.
+    """Returns dictionary with all installed packages.
     """
     installed = {}
 
@@ -94,7 +96,7 @@ def get_installed_packages():
 
 
 def get_outdated_packages():
-    u"""Returns dictionary with outdated installed packages.
+    """Returns dictionary with outdated installed packages.
     """
     installed = get_installed_packages()
     available = get_available_packages()
@@ -128,7 +130,7 @@ def import_formula_module(modulename):
 
 
 def get_package_data(modulename):
-    u"""Returns parsed information about package from *.json file with
+    """Returns parsed information about package from *.json file with
     passed file name via arguments.
     """
     formula = import_formula_module(modulename)
