@@ -25,10 +25,8 @@
 
 import os.path
 
-from procyon.pkg.models import Package
-from procyon.repo.decorators import repo_required
-
 from procyon import settings as procyon_settings
+from procyon.pkg.models import Package
 
 
 __all__ = (
@@ -44,16 +42,16 @@ def get_available_packages():
     formulas_dir = os.path.join(
         procyon_settings.REPO_PATH, procyon_settings.FORMULAS_DIR_NAME
     )
-    packages = {}
+    available = {}
 
     for modulename in os.listdir(formulas_dir):
         if modulename != '__init__.py' and not modulename.endswith('.pyc'):
             package_name, package_data = get_package_data(modulename)
 
             if package_name and package_data:
-                packages.setdefault(package_name, package_data)
+                available.setdefault(package_name, package_data)
 
-    return packages
+    return available
 
 
 def get_available_packages_by_name(name):
@@ -69,30 +67,55 @@ def get_available_packages_by_name(name):
         return name
 
     name = prepare_name(name)
-    packages = {}
+    available = {}
 
     for package_name, package_data in get_available_packages().iteritems():
         prepared_pkg_name = prepare_name(package_name)
 
         if name in prepared_pkg_name or prepared_pkg_name in name:
-            packages.setdefault(package_name, package_data)
+            available.setdefault(package_name, package_data)
 
-    return packages
+    return available
 
 
 def get_installed_packages():
     u"""Returns dictionary with all installed packages.
     """
-    packages = {}
+    installed = {}
 
     for entry in Package.select():
-        packages.setdefault(entry.name, {
+        installed.setdefault(entry.name, {
             'formula_name': entry.formula_name,
             'version': entry.version,
             'updated_at': entry.updated_at,
         })
 
-    return packages
+    return installed
+
+
+def get_outdated_packages():
+    u"""Returns dictionary with outdated installed packages.
+    """
+    installed = get_installed_packages()
+    available = get_available_packages()
+
+    def check_version(available_version, installed_version):
+        # TODO: improve this realization, check for various versions inputs
+        return int(available_version) > int(installed_version)
+
+    outdated = {}
+
+    for package_name, package_data in installed.iteritems():
+        available_version = available.get(package_name, {}).get('version', None)
+        installed_version = package_data.get('version')
+
+        if available_version and check_version(available_version, installed_version):
+            package_data.update({
+                'available_version': available_version,
+            })
+            outdated.setdefault(package_name, package_data)
+
+    return outdated
 
 
 def import_formula_module(modulename):

@@ -29,9 +29,8 @@ from git.cmd import Git
 from git.exc import InvalidGitRepositoryError
 from git.repo.base import Repo as GitRepo
 
-from procyon.utils.decorators import singleton
-
 from procyon import settings as procyon_settings
+from procyon.utils.decorators import singleton
 
 
 __all__ = (

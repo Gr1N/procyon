@@ -25,7 +25,7 @@
 
 from procyon.repo.models import Repo
 from procyon.pkg.logic import get_available_packages, get_installed_packages
-from procyon.pkg.logic import get_available_packages_by_name
+from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
 
 
 __all__ = (
@@ -62,7 +62,7 @@ def cache():
 def outdated():
     """ Output all outdated packages.
     """
-    pass
+    return get_outdated_packages()
 
 
 def search(package):
