@@ -33,11 +33,11 @@ from procyon import settings as procyon_settings
 
 __all__ = (
     'get_available_packages',
+    'get_available_packages_by_name',
     'get_installed_packages',
 )
 
 
-@repo_required
 def get_available_packages():
     u"""Returns dictionary with available to install packages from repo.
     """
@@ -56,7 +56,30 @@ def get_available_packages():
     return packages
 
 
-@repo_required
+def get_available_packages_by_name(name):
+    u"""Returns dictionary with available to install packages from repo with
+    specified package name.
+    """
+    def prepare_name(name):
+        name = str(name).lower()
+
+        for to_replace in ['-', '_', '/', ' ', '[', ']']:
+            name = name.replace(to_replace, '')
+
+        return name
+
+    name = prepare_name(name)
+    packages = {}
+
+    for package_name, package_data in get_available_packages().iteritems():
+        prepared_pkg_name = prepare_name(package_name)
+
+        if name in prepared_pkg_name or prepared_pkg_name in name:
+            packages.setdefault(package_name, package_data)
+
+    return packages
+
+
 def get_installed_packages():
     u"""Returns dictionary with all installed packages.
     """
