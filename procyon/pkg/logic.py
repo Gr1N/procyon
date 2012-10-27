@@ -95,15 +95,27 @@ def get_installed_packages():
     return installed
 
 
+def check_version(available_version, installed_version):
+    available_first_part, dot, available_second_part = available_version.partition('.')
+    installed_first_part, dot, installed_second_part = installed_version.partition('.')
+    if int(available_first_part) > int(installed_first_part):
+        return True
+    elif int(available_first_part) < int(installed_first_part):
+        return False
+    else:
+        if len(available_second_part) == 0:
+            return False
+        elif len(available_second_part) != 0 and len(installed_second_part) == 0:
+            return True
+        else:
+            return check_version(available_second_part, installed_second_part)
+    
+
 def get_outdated_packages():
     """Returns dictionary with outdated installed packages.
     """
     installed = get_installed_packages()
     available = get_available_packages()
-
-    def check_version(available_version, installed_version):
-        # TODO: improve this realization, check for various versions inputs
-        return int(available_version) > int(installed_version)
 
     outdated = {}
 
