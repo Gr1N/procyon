@@ -10,7 +10,6 @@ from mock import patch
 import peewee
 
 from procyon.pkg.logic import get_installed_packages, get_available_packages
-from procyon.pkg.logic import get_package_data_from_json
 
 
 __all__ = (
