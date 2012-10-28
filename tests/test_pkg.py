@@ -11,6 +11,7 @@ import peewee
 
 from procyon.pkg.logic import get_installed_packages, get_available_packages
 from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
+from procyon.pkg.logic import check_version
 
 
 __all__ = (
@@ -152,6 +153,18 @@ class LogicTests(unittest.TestCase):
         package = packages.get(FAKE_NAME1)
         self.assertEqual(package.get('available_version'), available_version)
         self.assertEqual(package.get('version'), FakePackage.get(name=FAKE_NAME1).version)
+
+    def test_compare_versions(self):
+        test_cases = (
+            ('1.4.2', '1.2'),
+            ('10.0', '9.9'),
+            ('11', '10.9.9.9'),
+            ('11.0.0.1', '11'),
+            ('0.1', '0.0.1'),
+        )
+        for case in test_cases:
+            self.assertTrue(check_version(case[0], case[1]))
+            self.assertFalse(check_version(case[1], case[0]))
 
 
 if __name__ == '__main__':
