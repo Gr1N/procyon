@@ -35,6 +35,7 @@ __all__ = (
     'get_available_packages',
     'get_available_packages_by_name',
     'get_installed_packages',
+    'get_outdated_packages',
 )
 
 
@@ -123,9 +124,9 @@ def get_outdated_packages():
 def import_formula_module(modulename):
     absolute_modulename = modulename.split('.')[0]
     try:
-        formula = __import__(absolute_modulename).Formula
-        return formula if formula.check_items else None
-    except AttributeError:
+        formula = __import__(absolute_modulename).Formula()
+        return formula if formula.check_items() else None
+    except (AttributeError, ImportError):
         return None
 
 

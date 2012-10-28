@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+
 from datetime import datetime
-import json
-from tempfile import NamedTemporaryFile
 import unittest
 
-from mock import patch
+from mock import patch, MagicMock
 import peewee
 
 from procyon.pkg.logic import get_installed_packages, get_available_packages
+from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
 
 
 __all__ = (
@@ -72,78 +73,85 @@ class LogicTests(unittest.TestCase):
         self.assertTrue('version' in package)
         self.assertTrue('updated_at' in package)
 
-    def create_temporary_file(self, file_content):
-        tf = NamedTemporaryFile(delete=False)
-        tf.write(file_content)
-        tf.close()
-
-        return tf.name
-
-    def test_get_package_data_from_invalid_file(self):
-        tf_name = self.create_temporary_file('invalid_file')
-
-        package_data = get_package_data_from_json(tf_name)
-        self.assertEqual(package_data, (None, None))
-
-    def test_get_package_data_from_invalid_json(self):
-        tf_name = self.create_temporary_file(json.dumps('].asd'))
-
-        package_data = get_package_data_from_json(tf_name)
-        self.assertEqual(package_data, (None, None))
-
-    def get_json_data(self, name):
-        return {
-            'name': name,
-            'info': 'test_info1',
-            'version': 1,
-        }
-
-    def test_get_package_data_from_valid_json(self):
-        json_data = self.get_json_data(FAKE_NAME1)
-        tf_name = self.create_temporary_file(json.dumps(json_data))
-
-        package_data = (get_package_data_from_json(tf_name))
-
-        self.assertEqual(type(package_data), type(()))
-        name, data = package_data
-        self.assertEqual(type(data), type({}))
-        self.assertEqual(name, FAKE_NAME1)
-        self.assertTrue('info' in data)
-        self.assertTrue('formula_name' in data)
-        self.assertTrue('version' in data)
-        self.assertEqual(data.get('formula_name'), tf_name)
-
     @patch('procyon.pkg.logic.os.listdir', new=lambda ls: [])
     def test_available_packages_type(self):
         packages = get_available_packages()
 
         self.assertEqual(type(packages), type({}))
 
-    def test_available_packages_valid_files(self):
+    def create_fake_import(self, name, version='1', check_items=True):
         filenames = []
+        filenames.append(FAKE_NAME1)
 
-        def append_filename(name):
-            json_data = self.get_json_data(name)
-            tf_name = self.create_temporary_file(json.dumps(json_data))
-            filenames.append(tf_name)
+        import_mock = MagicMock()
+        fake_package = MagicMock()
+        fake_package.name = name
+        fake_package.version = version
+        fake_package.check_items.return_value = check_items
+        import_mock.Formula.return_value = fake_package
 
-        append_filename(FAKE_NAME1)
-        append_filename(FAKE_NAME2)
+        return filenames, import_mock
+
+    def test_available_packages_valid_files(self):
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1)
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                packages = get_available_packages()
+
+        self.assertEqual(len(packages), 1)
+        self.assertTrue(FAKE_NAME1 in packages)
+
+    def test_available_packages_missed_attr(self):
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1, check_items=False)
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                packages = get_available_packages()
+
+        self.assertFalse(packages)
+
+    def test_available_packages_invalid_files(self):
+        filenames = [
+            '__ini__.py',
+            'module.pyc',
+        ]
 
         with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
             packages = get_available_packages()
 
-        self.assertEqual(len(packages), 2)
-        self.assertTrue(FAKE_NAME1 in packages)
-        self.assertTrue(FAKE_NAME2 in packages)
-
-    def test_available_packages_invalid_files(self):
-        tf_name = self.create_temporary_file('invalid_file')
-
-        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: [tf_name]):
-            packages = get_available_packages()
-
         self.assertFalse(packages)
+
+    def test_available_packages_by_name(self):
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1)
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                packages = get_available_packages_by_name(name=FAKE_NAME1)
+
+                self.assertEqual(len(packages), 1)
+                self.assertTrue(FAKE_NAME1 in packages)
+
+                packages = get_available_packages_by_name(name='not_founded')
+
+                self.assertFalse(packages)
+
+    def test_outdated_packages(self):
+        available_version = '2'
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1, version=available_version)
+
+        with patch('procyon.pkg.logic.Package', new=FakePackage):
+            with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+                with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                    packages = get_outdated_packages()
+
+        self.assertEqual(type(packages), type({}))
+        self.assertEqual(len(packages), 1)
+        self.assertTrue(FAKE_NAME1 in packages)
+
+        package = packages.get(FAKE_NAME1)
+        self.assertEqual(package.get('available_version'), available_version)
+        self.assertEqual(package.get('version'), FakePackage.get(name=FAKE_NAME1).version)
 
 
 if __name__ == '__main__':

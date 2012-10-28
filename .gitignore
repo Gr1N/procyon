@@ -29,3 +29,4 @@ pip-log.txt
 
 #Other files
 *sublime*
+.DS_Store
