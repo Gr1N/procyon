@@ -96,19 +96,18 @@ def get_installed_packages():
 
 
 def check_version(available_version, installed_version):
-    available_first_part, dot, available_second_part = available_version.partition('.')
-    installed_first_part, dot, installed_second_part = installed_version.partition('.')
-    if int(available_first_part) > int(installed_first_part):
+    available_lpart, dot, available_rpart = available_version.partition('.')
+    installed_lpart, dot, installed_rpart = installed_version.partition('.')
+    if int(available_lpart) > int(installed_lpart):
         return True
-    elif int(available_first_part) < int(installed_first_part):
+    elif int(available_lpart) < int(installed_lpart):
         return False
+    elif len(available_rpart) == 0:
+        return False
+    elif len(available_rpart) != 0 and len(installed_rpart) == 0:
+        return True
     else:
-        if len(available_second_part) == 0:
-            return False
-        elif len(available_second_part) != 0 and len(installed_second_part) == 0:
-            return True
-        else:
-            return check_version(available_second_part, installed_second_part)
+        return check_version(available_rpart, installed_rpart)
     
 
 def get_outdated_packages():

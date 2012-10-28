@@ -9,8 +9,8 @@ import unittest
 from mock import patch
 import peewee
 
-from procyon.pkg.logic import get_installed_packages, get_available_packages, check_version
-
+from procyon.pkg.logic import get_installed_packages, get_available_packages
+from procyon.pkg.logic import check_version
 
 __all__ = (
     'LogicTests',
