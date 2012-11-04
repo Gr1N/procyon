@@ -23,37 +23,57 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import os.path
+from __future__ import unicode_literals
 
 from git.cmd import Git
-from git.exc import InvalidGitRepositoryError
+from git.exc import InvalidGitRepositoryError, GitCommandError, NoSuchPathError
 from git.repo.base import Repo as GitRepo
 
 from procyon import settings as procyon_settings
-from procyon.utils.decorators import singleton
 
 
 __all__ = (
-    'Repo',
+    'update_repo',
 )
 
 
-@singleton
-class Repo(object):
-    repo = None
+def open_or_clone_repo():
+    """Returns opened or cloned repo and 'True' flag if operation successful
+    else 'None' object and 'False' flag.
+    """
+    try:
+        return GitRepo(path=procyon_settings.REPO_PATH), True
+    except (InvalidGitRepositoryError, NoSuchPathError):
+        pass
 
-    def __init__(self, *args, **kwargs):
-        if not os.path.exists(procyon_settings.PROCYON_PATH):
-            os.makedirs(procyon_settings.REPO_PATH)
+    try:
+        Git(procyon_settings.PROCYON_PATH).clone(procyon_settings.REMOTE_REPO)
+    except GitCommandError:
+        return None, False
 
-        # TODO: make this better (exceptions, code)
-        try:
-            self.repo = GitRepo(path=procyon_settings.REPO_PATH)
-        except InvalidGitRepositoryError:
-            Git(procyon_settings.PROCYON_PATH).clone(procyon_settings.REMOTE_REPO)
-            self.repo = GitRepo(path=procyon_settings.REPO_PATH)
+    return GitRepo(path=procyon_settings.REPO_PATH), True
 
-    def update(self):
-        # TODO: return True if update successful else False
-        origin = self.repo.remotes.origin
+
+def update_repo():
+    """Returns 'True' and hexshas if operation successful else 'False' and
+    none-hexshas. If raises some erros when repo updating, return 'False',
+    current repo hash and none-hexsha.
+    """
+    repo, successful = open_or_clone_repo()
+
+    if not successful:
+        return False, None, None
+
+    hexsha = lambda r: r.heads.master.commit.tree.hexsha
+    before_up_hexhsha = hexsha(repo)
+
+    try:
+        origin = repo.remotes.origin
         origin.pull()
+    except GitCommandError:
+        return False, before_up_hexhsha, None
+    except AssertionError:
+        pass
+
+    after_up_hexsha = hexsha(repo)
+    return True, before_up_hexhsha, after_up_hexsha

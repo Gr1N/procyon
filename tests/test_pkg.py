@@ -82,7 +82,7 @@ class LogicTests(unittest.TestCase):
 
     def create_fake_import(self, name, version='1', check_items=True):
         filenames = []
-        filenames.append(FAKE_NAME1)
+        filenames.append('%s.py' % FAKE_NAME1)
 
         import_mock = MagicMock()
         fake_package = MagicMock()

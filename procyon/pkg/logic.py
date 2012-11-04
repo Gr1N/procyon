@@ -42,13 +42,10 @@ __all__ = (
 def get_available_packages():
     """Returns dictionary with available to install packages from repo.
     """
-    formulas_dir = os.path.join(
-        procyon_settings.REPO_PATH, procyon_settings.FORMULAS_DIR_NAME
-    )
     available = {}
 
-    for modulename in os.listdir(formulas_dir):
-        if modulename != '__init__.py' and not modulename.endswith('.pyc'):
+    for modulename in os.listdir(procyon_settings.REPO_PATH):
+        if modulename != '__init__.py' and modulename.endswith('.py'):
             package_name, package_data = get_package_data(modulename)
 
             if package_name and package_data:

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from procyon.pkg.models import Formula as BaseFormula
 

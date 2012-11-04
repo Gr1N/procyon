@@ -25,7 +25,7 @@
 
 from __future__ import unicode_literals
 
-from procyon.repo.models import Repo
+from procyon.repo.logic import update_repo
 from procyon.pkg.logic import get_available_packages, get_installed_packages
 from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
 
@@ -76,7 +76,7 @@ def search(package):
 def update():
     """Update packages index.
     """
-    Repo().update()
+    return update_repo()
 
 
 def install(packages=[]):

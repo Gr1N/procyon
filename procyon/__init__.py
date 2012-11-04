@@ -23,8 +23,11 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+from __future__ import unicode_literals
+
 import os
 import sys
+import warnings
 
 
 __all__ = (
@@ -37,10 +40,8 @@ default_settings = {
     'PROCYON_PATH': os.path.expanduser('~/.procyon'),
 
     # repo settings
-    'REPO_NAME': 'procyon',
-    'REPO_PATH': None,
-    'REMOTE_REPO': 'git://github.com/Gr1N/procyon.git',
-    'FORMULAS_DIR_NAME': 'formulas',
+    'REPO_PATH': '',
+    'REMOTE_REPO': '',
 
     # packaging settings
     'PACKAGES_DB_NAME': 'packges.db',
@@ -55,11 +56,20 @@ class Settings:
 
 settings = Settings()
 
+if not settings.REMOTE_REPO:
+    warnings.showwarning(
+        'Missed remote repository parameter',
+        UserWarning,
+        'procyon/__init__.py',
+        44
+    )
+
 if not os.path.exists(settings.PROCYON_PATH):
     os.makedirs(settings.PROCYON_PATH)
 
 if not getattr(settings, 'REPO_PATH', None):
-    settings.REPO_PATH = os.path.join(settings.PROCYON_PATH, settings.REPO_NAME)
+    git_name = settings.REMOTE_REPO.split('/')[-1]
+    repo_name = git_name.split('.')[0]
+    settings.REPO_PATH = os.path.join(settings.PROCYON_PATH, repo_name)
 
-formulas_path = os.path.join(settings.REPO_PATH, settings.FORMULAS_DIR_NAME)
-sys.path.append(formulas_path)
+sys.path.append(settings.REPO_PATH)

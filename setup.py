@@ -28,6 +28,5 @@ setup(
         'procyon',
         'procyon.pkg',
         'procyon.repo',
-        'procyon.utils'
     ],
 )
