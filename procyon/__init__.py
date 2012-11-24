@@ -45,6 +45,7 @@ default_settings = {
 
     # packaging settings
     'PACKAGES_DB_NAME': 'packges.db',
+    'INSTALL_PATH': '',
 }
 
 

@@ -28,7 +28,7 @@ from __future__ import unicode_literals
 import os.path
 
 from procyon import settings as procyon_settings
-from procyon.pkg.models import Package
+from procyon.pkg.models import Package, InstallationStatuses
 
 
 __all__ = (
@@ -36,6 +36,9 @@ __all__ = (
     'get_available_packages_by_name',
     'get_installed_packages',
     'get_outdated_packages',
+    'install_package',
+    'uninstall_package',
+    'upgrade_package',
 )
 
 
@@ -156,3 +159,56 @@ def get_package_data(modulename):
     }
 
     return name, data
+
+
+def install_package(name):
+    available = get_available_packages()
+    if name not in available:
+        return InstallationStatuses.FORMULA_NOT_FOUND
+
+    packages = [package.name for package in Package.select().where(Package.name == name)]
+    if len(packages) > 1:
+        return InstallationStatuses.INSTALL_ERROR
+    elif packages and packages[0] == name:
+        return InstallationStatuses.ALREADY_INSTALLED
+
+    package = available.get(name)
+    formula = import_formula_module(package.get('formula_name'))
+    if not formula:
+        return InstallationStatuses.BAD_FORMULA
+
+    status = formula.install()
+    if status != InstallationStatuses.INSTALL_OK:
+        return status
+
+    Package.create(
+        name=formula.name,
+        formula_name=package.get('formula_name'),
+        version=formula.version
+    )
+
+    return status
+
+
+def uninstall_package(name):
+    installed = get_installed_packages()
+    if name not in installed:
+        return InstallationStatuses.NOT_INSTALLED
+
+    package = installed.get(name)
+    formula = import_formula_module(package.get('formula_name'))
+    if not formula:
+        return InstallationStatuses.BAD_FORMULA
+
+    status = formula.uninstall()
+    if status != InstallationStatuses.UNINSTALL_OK:
+        return status
+
+    package = Package.get(name=name)
+    package.delete_instance()
+
+    return status
+
+
+def upgrade_package(name):
+    raise NotImplementedError
