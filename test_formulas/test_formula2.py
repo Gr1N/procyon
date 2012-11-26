@@ -7,3 +7,4 @@ class Formula(BaseFormula):
     name = 'Test2'
     info = 'ololo2'
     version = '12'
+    url = 'http://url'
