@@ -26,6 +26,7 @@
 from __future__ import unicode_literals
 
 import os
+import json
 import sys
 import warnings
 
@@ -49,6 +50,28 @@ default_settings = {
 }
 
 
+if not os.path.exists(default_settings['PROCYON_PATH']):
+    os.makedirs(default_settings['PROCYON_PATH'])
+
+settings_path = os.path.join(default_settings['PROCYON_PATH'], 'settings.json')
+if not os.path.exists(settings_path):
+    settings_to_file = default_settings.copy()
+    del settings_to_file['PROCYON_PATH']
+
+    f = open(settings_path, 'wb')
+    json.dump(settings_to_file, f)
+    f.close()
+else:
+    f = open(settings_path, 'rb')
+    try:
+        settings_from_file = json.load(f)
+    except ValueError as e:
+        raise e
+    f.close()
+
+    default_settings.update(**settings_from_file)
+
+
 class Settings:
     def __init__(self):
         for k, v in default_settings.items():
@@ -61,12 +84,10 @@ if not settings.REMOTE_REPO:
     warnings.showwarning(
         'Missed remote repository parameter',
         UserWarning,
-        'procyon/__init__.py',
-        44
+        settings_path,
+        1
     )
-
-if not os.path.exists(settings.PROCYON_PATH):
-    os.makedirs(settings.PROCYON_PATH)
+    sys.exit(1)
 
 if not getattr(settings, 'REPO_PATH', None):
     git_name = settings.REMOTE_REPO.split('/')[-1]
