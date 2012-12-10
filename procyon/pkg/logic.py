@@ -26,6 +26,7 @@
 from __future__ import unicode_literals
 
 import os.path
+import re
 
 from procyon import settings as procyon_settings
 from procyon.pkg.models import Package
@@ -59,12 +60,7 @@ def get_available_packages_by_name(name):
     specified package name.
     """
     def prepare_name(name):
-        name = str(name).lower()
-
-        for to_replace in ['-', '_', '/', ' ', '[', ']']:
-            name = name.replace(to_replace, '')
-
-        return name
+        return re.sub(r'[-_/\[ \]]','',str(name).lower())
 
     name = prepare_name(name)
     available = {}
