@@ -28,6 +28,7 @@ from __future__ import unicode_literals
 from procyon.repo.logic import update_repo
 from procyon.pkg.logic import get_available_packages, get_installed_packages
 from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
+from procyon.pkg.logic import install_package, uninstall_package
 
 
 __all__ = (
@@ -82,16 +83,22 @@ def update():
 def install(packages=[]):
     """Install packages.
     """
-    pass
+    installed = []
+    for package in packages:
+        installed.append((package, install_package(package)))
+    return installed
 
 
 def uninstall(packages=[]):
     """Uninstall packages.
     """
-    pass
+    uninstalled = []
+    for package in packages:
+        uninstalled.append((package, uninstall_package(package)))
+    return uninstalled
 
 
 def upgrade(packages=[]):
     """Upgrade packages.
     """
-    pass
+    raise NotImplementedError

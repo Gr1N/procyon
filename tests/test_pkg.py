@@ -11,7 +11,8 @@ import peewee
 
 from procyon.pkg.logic import get_installed_packages, get_available_packages
 from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
-from procyon.pkg.logic import check_version
+from procyon.pkg.logic import check_version, install_package, uninstall_package
+from procyon.pkg.models import InstallationStatuses
 
 
 __all__ = (
@@ -38,13 +39,27 @@ FakePackage.create_table()
 
 FAKE_NAME1 = 'FAKE1'
 FAKE_NAME2 = 'FAKE2'
-FakePackage.create(name=FAKE_NAME1, formula_name=FAKE_NAME1, version='1')
-FakePackage.create(name=FAKE_NAME2, formula_name=FAKE_NAME2, version='1')
 
 
+@patch('procyon.pkg.logic.Package', new=FakePackage)
 class LogicTests(unittest.TestCase):
     # TODO: clone repo with formulas or create them
     # NOTE: now for launch tests you should copy some formulas to users _procyon_ directory
+    def setUp(self):
+        FakePackage.create(name=FAKE_NAME1, formula_name=FAKE_NAME1, version='1')
+        FakePackage.create(name=FAKE_NAME2, formula_name=FAKE_NAME2, version='1')
+
+    def tearDown(self):
+        def delete_package(name):
+            try:
+                p = FakePackage.get(name=name)
+                p.delete_instance()
+            except FakePackage.DoesNotExist:
+                pass
+
+        delete_package(FAKE_NAME1)
+        delete_package(FAKE_NAME2)
+
     @patch('procyon.pkg.logic.Package', new=FakePackage)
     def test_installed_packages_type(self):
         packages = get_installed_packages()
@@ -80,7 +95,8 @@ class LogicTests(unittest.TestCase):
 
         self.assertEqual(type(packages), type({}))
 
-    def create_fake_import(self, name, version='1', check_items=True):
+    def create_fake_import(self, name, version='1', check_items=True,
+        install_status=InstallationStatuses.INSTALL_OK, uninstall_status=InstallationStatuses.UNINSTALL_OK):
         filenames = []
         filenames.append('%s.py' % FAKE_NAME1)
 
@@ -89,6 +105,8 @@ class LogicTests(unittest.TestCase):
         fake_package.name = name
         fake_package.version = version
         fake_package.check_items.return_value = check_items
+        fake_package.install.return_value = install_status
+        fake_package.uninstall.return_value = uninstall_status
         import_mock.Formula.return_value = fake_package
 
         return filenames, import_mock
@@ -165,6 +183,65 @@ class LogicTests(unittest.TestCase):
         for case in test_cases:
             self.assertTrue(check_version(case[0], case[1]))
             self.assertFalse(check_version(case[1], case[0]))
+
+    def test_install_ok(self):
+        p = FakePackage.get(name=FAKE_NAME1)
+        p.delete_instance()
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1)
+        packages_count = FakePackage.select().count()
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                status = install_package(FAKE_NAME1)
+
+        self.assertEqual(status, InstallationStatuses.INSTALL_OK)
+        self.assertEqual(FakePackage.select().count(), packages_count + 1)
+
+    def test_install_already_installed(self):
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1)
+        packages_count = FakePackage.select().count()
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                status = install_package(FAKE_NAME1)
+
+        self.assertEqual(status, InstallationStatuses.ALREADY_INSTALLED)
+        self.assertEqual(FakePackage.select().count(), packages_count)
+
+    def test_install_error(self):
+        p = FakePackage.get(name=FAKE_NAME1)
+        p.delete_instance()
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1, install_status=InstallationStatuses.INSTALL_ERROR)
+        packages_count = FakePackage.select().count()
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                status = install_package(FAKE_NAME1)
+
+        self.assertEqual(status, InstallationStatuses.INSTALL_ERROR)
+        self.assertEqual(FakePackage.select().count(), packages_count)
+
+    def test_uninstall_ok(self):
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1)
+        packages_count = FakePackage.select().count()
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                status = uninstall_package(FAKE_NAME1)
+
+        self.assertEqual(status, InstallationStatuses.UNINSTALL_OK)
+        self.assertEqual(FakePackage.select().count(), packages_count - 1)
+
+    def test_uninstall_error(self):
+        filenames, import_mock = self.create_fake_import(name=FAKE_NAME1, uninstall_status=InstallationStatuses.UNINSTALL_ERROR)
+        packages_count = FakePackage.select().count()
+
+        with patch('procyon.pkg.logic.os.listdir', new=lambda ls: filenames):
+            with patch('__builtin__.__import__', new=lambda *args: import_mock):
+                status = uninstall_package(FAKE_NAME1)
+
+        self.assertEqual(status, InstallationStatuses.UNINSTALL_ERROR)
+        self.assertEqual(FakePackage.select().count(), packages_count)
 
 
 if __name__ == '__main__':
