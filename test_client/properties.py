@@ -22,15 +22,17 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import os
 import json
+import os
 from urlparse import urlparse
 
 from procyon import settings as procyon_settings
 
+
 __all__ = (
     'set_remote_repo_url',
 )
+
 
 def set_remote_repo_url(url):
     allowed_schemes = (
@@ -39,10 +41,10 @@ def set_remote_repo_url(url):
     )
     parse_result = urlparse(url)
     if not parse_result.scheme in allowed_schemes:
-        return (False, 'Only http/https allowed')
+        return False, 'Only http/https allowed'
     if not parse_result.path.endswith('.git'):
-        return (False, 'Only git repositories allowed')
-    
+        return False, 'Only git repositories allowed'
+
     settings_path = os.path.join(procyon_settings['PROCYON_PATH'], 'settings.json')
     f = open(settings_path, 'r')
     try:
@@ -55,4 +57,4 @@ def set_remote_repo_url(url):
     json.dump(settings_from_file, f)
     f.close()
 
-    return (True, '')
+    return True, ''

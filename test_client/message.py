@@ -22,8 +22,10 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from procyon.pkg.models import InstallationStatuses
 import message
+
+from procyon.pkg.models import InstallationStatuses
+
 
 __all__ = (
     'get_installation_status',
@@ -32,6 +34,7 @@ __all__ = (
     'get_repo_setting_status',
     'get_package_list_info',
 )
+
 
 installation_statuses = {
     InstallationStatuses.INSTALL_OK: 'Package %s succesfully installed',
@@ -45,6 +48,7 @@ installation_statuses = {
     InstallationStatuses.UNINSTALL_OK:'Package %s succesfully removed',
     InstallationStatuses.NOT_INSTALLED: 'Selected package %s is not installed',
 }
+
 
 def get_installation_status(package):
     status = installation_statuses.get(package[1])

@@ -28,12 +28,11 @@ from __future__ import unicode_literals
 import argparse
 import textwrap
 
-import procyon
+from procyon import core
+
 import test_client.message as msg
 import test_client.properties
-from procyon import core
-from procyon import settings
-from procyon.pkg.models import InstallationStatuses
+
 
 command_accordance = {
     'installed': 'freeze',
@@ -42,7 +41,7 @@ command_accordance = {
 }
 
 parser = argparse.ArgumentParser(prog='procyon',
-    description='Package manager for OSTIS project.', 
+    description='Package manager for OSTIS project.',
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=textwrap.dedent('''Supported commands:
   set <url> - Sets url of repo containing packages.
@@ -104,7 +103,7 @@ try:
                     print(i)
         else:
             parser.print_help()
-        
+
     elif args.command == 'list':
         if not args.parameter:
             parser.print_help()
@@ -119,7 +118,7 @@ try:
             for i in info:
                 print(i)
     else:
-        parser.print_help() 
+        parser.print_help()
 
 except TypeError:
     parser.print_help()
