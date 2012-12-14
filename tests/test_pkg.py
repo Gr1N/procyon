@@ -11,7 +11,7 @@ import peewee
 
 from procyon.pkg.logic import get_installed_packages, get_available_packages
 from procyon.pkg.logic import get_available_packages_by_name, get_outdated_packages
-from procyon.pkg.logic import check_version, install_package, uninstall_package
+from procyon.pkg.logic import is_outdated, install_package, uninstall_package
 from procyon.pkg.models import InstallationStatuses
 
 
@@ -181,8 +181,8 @@ class LogicTests(unittest.TestCase):
             ('0.1', '0.0.1'),
         )
         for case in test_cases:
-            self.assertTrue(check_version(case[0], case[1]))
-            self.assertFalse(check_version(case[1], case[0]))
+            self.assertTrue(is_outdated(case[0], case[1]))
+            self.assertFalse(is_outdated(case[1], case[0]))
 
     def test_install_ok(self):
         p = FakePackage.get(name=FAKE_NAME1)

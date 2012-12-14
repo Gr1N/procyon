@@ -98,7 +98,7 @@ def uninstall(packages=[]):
     return uninstalled
 
 
-def upgrade(packages=[]):
+def upgrade(packages=[]):  # TODO: strange method, fix it
     """Upgrade package.
     """
     uninstalled = uninstall(packages)

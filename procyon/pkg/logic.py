@@ -118,7 +118,7 @@ def get_outdated_packages():
         available_version = available.get(package_name, {}).get('version', None)
         installed_version = package_data.get('version')
 
-        if available_version and is_outdate(available_version, installed_version):
+        if available_version and is_outdated(available_version, installed_version):
             package_data.update({
                 'available_version': available_version,
             })
