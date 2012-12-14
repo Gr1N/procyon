@@ -63,7 +63,7 @@ def get_available_packages_by_name(name):
     specified package name.
     """
     def prepare_name(name):
-        return re.sub(r'[-_/\[ \]]','',str(name).lower())
+        return re.sub(r'[-_/\[ \]]', '', str(name).lower())
 
     name = prepare_name(name)
     available = {}
@@ -92,8 +92,8 @@ def get_installed_packages():
     return installed
 
 
-def is_outdate(available_version, installed_version):
-    available_version_list, installed_version_list = available_version.split("."), installed_version.split(".")
+def is_outdated(available_version, installed_version):
+    available_version_list, installed_version_list = available_version.split('.'), installed_version.split('.')
     i, n = 0, min(len(available_version_list), len(installed_version_list))
     while i < n:
         if int(available_version_list[i]) > int(installed_version_list[i]):
