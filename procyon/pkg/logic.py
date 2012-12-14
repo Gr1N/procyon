@@ -26,6 +26,7 @@
 from __future__ import unicode_literals
 
 import os.path
+import re
 
 from procyon import settings as procyon_settings
 from procyon.pkg.models import Package, InstallationStatuses
@@ -62,12 +63,7 @@ def get_available_packages_by_name(name):
     specified package name.
     """
     def prepare_name(name):
-        name = str(name).lower()
-
-        for to_replace in ['-', '_', '/', ' ', '[', ']']:
-            name = name.replace(to_replace, '')
-
-        return name
+        return re.sub(r'[-_/\[ \]]', '', str(name).lower())
 
     name = prepare_name(name)
     available = {}
@@ -96,20 +92,18 @@ def get_installed_packages():
     return installed
 
 
-def check_version(available_version, installed_version):
-    available_lpart, dot, available_rpart = available_version.partition('.')
-    installed_lpart, dot, installed_rpart = installed_version.partition('.')
-
-    if int(available_lpart) > int(installed_lpart):
+def is_outdated(available_version, installed_version):
+    available_version_list, installed_version_list = available_version.split('.'), installed_version.split('.')
+    i, n = 0, min(len(available_version_list), len(installed_version_list))
+    while i < n:
+        if int(available_version_list[i]) > int(installed_version_list[i]):
+            return True
+        elif int(available_version_list[i]) < int(installed_version_list[i]):
+            return False
+        i += 1
+    if len(available_version_list) > len(installed_version_list):
         return True
-    elif int(available_lpart) < int(installed_lpart):
-        return False
-    elif len(available_rpart) == 0:
-        return False
-    elif len(available_rpart) != 0 and len(installed_rpart) == 0:
-        return True
-    else:
-        return check_version(available_rpart, installed_rpart)
+    return False
 
 
 def get_outdated_packages():
@@ -124,7 +118,7 @@ def get_outdated_packages():
         available_version = available.get(package_name, {}).get('version', None)
         installed_version = package_data.get('version')
 
-        if available_version and check_version(available_version, installed_version):
+        if available_version and is_outdate(available_version, installed_version):
             package_data.update({
                 'available_version': available_version,
             })
