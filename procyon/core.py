@@ -99,6 +99,10 @@ def uninstall(packages=[]):
 
 
 def upgrade(packages=[]):
-    """Upgrade packages.
+    """Upgrade package.
     """
-    raise NotImplementedError
+    uninstalled = uninstall(packages)
+    installed = []
+    if not uninstalled:
+        installed = install(uninstalled)
+    return installed
